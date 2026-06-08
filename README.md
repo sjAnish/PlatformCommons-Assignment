@@ -1,364 +1,556 @@
-# PlatformCommons Assignment
+# Student Management System
 
 ## Overview
 
-PlatformCommons Assignment is a Spring Boot REST API application developed to demonstrate enterprise-level backend development practices including:
+Student Management System is a secure RESTful web application developed using Spring Boot and PostgreSQL as part of the PlatformCommons Assignment.
 
-* JWT Authentication & Authorization
-* Role-Based Access Control (RBAC)
-* Student Management
-* Course Management
-* RESTful API Design
-* DTO-Based Request/Response Handling
-* Global Exception Handling
-* Spring Security Integration
-* PostgreSQL Database Integration
-* JPA/Hibernate Relationships
+The application enables administrators to manage students, courses, and course assignments, while students can manage their own profiles and enrolled courses.
 
-The application follows a layered architecture and industry-standard coding practices suitable for production-grade applications.
+The project follows enterprise-level backend development practices including:
 
----
-
-## Tech Stack
-
-### Backend
-
-* Java 21
-* Spring Boot 3.x
-* Spring Security
-* Spring Data JPA
-* Hibernate
-* JWT (JSON Web Token)
-
-### Database
-
-* PostgreSQL
-
-### Build Tool
-
-* Maven
-
-### Additional Libraries
-
-* Lombok
-* Jakarta Validation
-* ModelMapper (if used)
-* Jackson
+* Layered Architecture
+* JWT Authentication
+* Role-Based Authorization (RBAC)
+* DTO Pattern
+* Standardized API Responses
+* Swagger/OpenAPI Documentation
+* Spring Data JPA & Hibernate
+* PostgreSQL Database
 
 ---
 
-## Project Structure
+# Technology Stack
+
+| Technology      | Version |
+| --------------- | ------- |
+| Java            | 21      |
+| Spring Boot     | 3.4.0   |
+| Spring Security | 6.x     |
+| Spring Data JPA | 3.x     |
+| Hibernate       | 6.x     |
+| PostgreSQL      | 16+     |
+| JWT             | 0.11.5  |
+| Swagger/OpenAPI | 2.8.8   |
+| Maven           | 3.9+    |
+| Lombok          | Latest  |
+
+---
+
+# Architecture
 
 ```text
-src/main/java/com/platformcommons
+Controller Layer
+        |
+        v
+Service Layer
+        |
+        v
+Repository Layer
+        |
+        v
+PostgreSQL Database
+```
 
-├── config
-│   └── SecurityConfig
-│
+Project Structure:
+
+```text
+src/main/java
+|
 ├── controller
 │   ├── AuthController
-│   ├── StudentController
-│   └── CourseController
-│
-├── dto
-│   ├── request
-│   └── response
-│
-├── entity
-│   ├── User
-│   ├── Student
-│   ├── Course
-│   └── Role
-│
-├── repository
-│   ├── UserRepository
-│   ├── StudentRepository
-│   └── CourseRepository
+│   ├── AdminController
+│   └── StudentController
 │
 ├── service
-│   ├── AuthService
-│   ├── StudentService
-│   └── CourseService
+├── service/impl
+│
+├── repository
+│
+├── entity
+│
+├── model
 │
 ├── security
-│   ├── JwtAuthenticationFilter
-│   ├── JwtService
-│   └── CustomUserDetailsService
 │
 ├── exception
-│   ├── GlobalExceptionHandler
-│   ├── ResourceNotFoundException
-│   └── UnauthorizedException
 │
-└── PlatformCommonsApplication
+└── config
 ```
 
 ---
 
-## Features
+# Security
 
-### Authentication
+The application uses:
 
-* User Registration
-* User Login
-* JWT Token Generation
-* Stateless Authentication
-
-### Authorization
+* Spring Security
+* JWT Authentication
+* Role-Based Access Control
 
 Supported Roles:
 
-* ADMIN
-* STUDENT
-
-Role-Based Endpoint Protection using:
-
-```java
-@PreAuthorize(...)
+```text
+ROLE_ADMIN
+ROLE_STUDENT
 ```
 
-Examples:
+All protected APIs require:
 
-```java
-@PreAuthorize("hasRole('ADMIN')")
-```
-
-```java
-@PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
+```http
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 ---
 
-## Student Management
+# Authentication APIs
 
-### Capabilities
+## Admin Login
 
-* Create Student
-* Get Student by ID
-* Get All Students
-* Update Student
-* Delete Student
+```http
+POST /api/auth/admin/login
+```
 
-### Sample Student Object
+### Request
 
 ```json
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "age": 22
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+### Response
+
+```json
+{
+  "token": "jwt-token"
 }
 ```
 
 ---
 
-## Course Management
+## Student Login
 
-### Capabilities
+```http
+POST /api/auth/student/login
+```
 
-* Create Course
-* Get Course Details
-* Update Course
-* Delete Course
-* Assign Students to Courses
+### Request
 
-### Sample Course Object
+```json
+{
+  "studentCode": "STU-12345678",
+  "dateOfBirth": "1998-05-15"
+}
+```
+
+### Response
+
+```json
+{
+  "token": "jwt-token"
+}
+```
+
+---
+
+# Admin Operations
+
+Base URL:
+
+```text
+/api/admin
+```
+
+Role Required:
+
+```text
+ROLE_ADMIN
+```
+
+---
+
+## 1. Create Student
+
+```http
+POST /api/admin/create-student
+```
+
+Creates a new student admission record.
+
+---
+
+## 2. Create Course
+
+```http
+POST /api/admin/create-course
+```
+
+Creates a new course.
+
+### Sample Request
 
 ```json
 {
   "courseName": "Java Backend Development",
-  "courseCode": "JAVA101",
-  "description": "Spring Boot and Microservices"
+  "description": "Spring Boot and Microservices",
+  "courseType": "TECHNICAL",
+  "durationInMonths": 6,
+  "topics": [
+    "Java",
+    "Spring Boot",
+    "Kafka",
+    "PostgreSQL"
+  ]
 }
 ```
 
 ---
 
-## Entity Relationships
-
-### Student ↔ Course
-
-Many-to-Many Relationship
-
-```java
-@ManyToMany
-@JoinTable(
-    name = "student_course",
-    joinColumns = @JoinColumn(name = "student_id"),
-    inverseJoinColumns = @JoinColumn(name = "course_id")
-)
-private List<Course> courses;
-```
-
-```java
-@ManyToMany(mappedBy = "courses")
-private List<Student> students;
-```
-
----
-
-## API Endpoints
-
-### Authentication APIs
-
-| Method | Endpoint           | Description   |
-| ------ | ------------------ | ------------- |
-| POST   | /api/auth/register | Register User |
-| POST   | /api/auth/login    | Login User    |
-
----
-
-### Student APIs
-
-| Method | Endpoint           |
-| ------ | ------------------ |
-| POST   | /api/students      |
-| GET    | /api/students      |
-| GET    | /api/students/{id} |
-| PUT    | /api/students/{id} |
-| DELETE | /api/students/{id} |
-
----
-
-### Course APIs
-
-| Method | Endpoint          |
-| ------ | ----------------- |
-| POST   | /api/courses      |
-| GET    | /api/courses      |
-| GET    | /api/courses/{id} |
-| PUT    | /api/courses/{id} |
-| DELETE | /api/courses/{id} |
-
----
-
-## Security Flow
-
-1. User registers.
-2. User logs in.
-3. JWT token is generated.
-4. Client sends token in Authorization header.
+## 3. Assign Course To Student
 
 ```http
-Authorization: Bearer <jwt-token>
+POST /api/admin/assign-course
 ```
 
-5. JwtAuthenticationFilter validates token.
-6. Spring Security authorizes request.
-7. Requested API executes.
-
----
-
-## Exception Handling
-
-Global exception handling is implemented using:
-
-```java
-@RestControllerAdvice
-```
-
-Handled Exceptions:
-
-* ResourceNotFoundException
-* BadRequestException
-* AccessDeniedException
-* MethodArgumentNotValidException
-* Generic Exception
-
-Standard Error Response:
+### Request
 
 ```json
 {
-  "timestamp": "2026-06-07T10:00:00",
-  "status": 404,
-  "message": "Student not found"
+  "studentCode": "STU-12345678",
+  "courseName": "Java Backend Development"
 }
 ```
 
 ---
 
-## Database Configuration
+## 4. Search Students By Name
 
-Configure PostgreSQL in:
-
-```properties
-application.properties
+```http
+GET /api/admin/students/search?studentName=Anish
 ```
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/platformcommons
-spring.datasource.username=postgres
-spring.datasource.password=password
+Returns matching students.
 
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+---
+
+## 5. Get Students Assigned To Course
+
+```http
+GET /api/admin/courses/{courseName}/students
+```
+
+Returns all students enrolled in a course.
+
+---
+
+# Student Operations
+
+Base URL:
+
+```text
+/api/students
+```
+
+Role Required:
+
+```text
+ROLE_STUDENT
 ```
 
 ---
 
-## Running the Application
+## 1. Get Student Profile
 
-### Clone Repository
+```http
+GET /api/students/{studentCode}
+```
+
+Returns student profile details.
+
+---
+
+## 2. Update Student Profile
+
+```http
+PATCH /api/students/update-profile
+```
+
+Allows student to update:
+
+* Email
+* Mobile Number
+* Parent Name
+
+---
+
+## 3. Leave Course
+
+```http
+DELETE /api/students/leave-course
+```
+
+### Request
+
+```json
+{
+  "studentCode": "STU-12345678",
+  "courseName": "Java Backend Development"
+}
+```
+
+Removes the course from student's enrolled courses.
+
+---
+
+# Standard API Response Format
+
+All business APIs return a standardized response structure.
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {},
+  "timestamp": "2026-06-08T10:30:00"
+}
+```
+
+---
+
+# Database Tables
+
+## students
+
+Stores:
+
+* Student Code
+* Name
+* Date Of Birth
+* Email
+* Mobile Number
+* Gender
+* Parent Name
+
+---
+
+## student_addresses
+
+Stores:
+
+* Permanent Address
+* Current Address
+
+---
+
+## courses
+
+Stores:
+
+* Course Information
+* Duration
+* Topics
+
+---
+
+## student_course
+
+Many-to-Many mapping table between:
+
+* Students
+* Courses
+
+---
+
+## course_topics
+
+Stores course topics.
+
+---
+
+## app_users
+
+Stores administrator login information.
+
+Columns:
+
+```text
+id
+username
+password
+role
+```
+
+---
+
+# Swagger Documentation
+
+Swagger UI:
+
+```text
+http://localhost:8083/swagger-ui/index.html
+```
+
+OpenAPI Specification:
+
+```text
+http://localhost:8083/api-docs
+```
+
+---
+
+# Application Configuration
+
+Example:
+
+```yaml
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookmyshow
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+jwt:
+  secret: 1234567890123456789012345678901234567890
+  expiration: 86400000
+```
+
+---
+
+# Running The Application
+
+## 1. Clone Repository
 
 ```bash
 git clone <repository-url>
 ```
 
-### Navigate to Project
+---
 
-```bash
-cd PlatformCommons
+## 2. Create PostgreSQL Database
+
+```sql
+CREATE DATABASE bookmyshow;
 ```
 
-### Build Project
+---
+
+## 3. Update Database Credentials
+
+Configure:
+
+```yaml
+application.yml
+```
+
+with your PostgreSQL username and password.
+
+---
+
+## 4. Build Project
 
 ```bash
 mvn clean install
 ```
 
-### Run Application
+---
+
+## 5. Run Application
 
 ```bash
 mvn spring-boot:run
 ```
 
-Application starts at:
+Application URL:
 
 ```text
-http://localhost:8080
+http://localhost:8083
 ```
 
 ---
 
-## Future Enhancements
+# Sample Admin User
 
-* Swagger/OpenAPI Documentation
-* Docker Support
-* Redis Caching
-* Kafka Integration
-* Audit Logging
+Insert an administrator record:
+
+```sql
+INSERT INTO app_users
+(
+    username,
+    password,
+    role
+)
+VALUES
+(
+    'admin',
+    '$2a$10$7EqJtq98hPqEX7fNZaFWoOHiW9Pz9nP9V5nYeD1yfknhkXaoCA8Dm',
+    'ROLE_ADMIN'
+);
+```
+
+Credentials:
+
+```text
+Username : admin
+Password : admin123
+```
+
+---
+
+# Key Features Implemented
+
+✔ JWT Authentication
+
+✔ Role-Based Authorization
+
+✔ Student Admission Management
+
+✔ Course Management
+
+✔ Course Assignment Management
+
+✔ Student Self-Service Operations
+
+✔ Swagger Documentation
+
+✔ Standardized API Responses
+
+✔ PostgreSQL Integration
+
+✔ Spring Security
+
+✔ DTO-Based Architecture
+
+✔ JPA/Hibernate ORM
+
+---
+
+# Future Enhancements
+
+* Refresh Token Support
 * Pagination & Sorting
-* File Upload Support
-* Unit & Integration Tests
+* Docker Containerization
+* Kubernetes Deployment
+* Audit Logging
+* Email Notifications
+* Unit Testing & Integration Testing
 * CI/CD Pipeline
 
 ---
 
-## Author
+# Author
 
 Anish Kumar
 
 Java Backend Developer
 
-### Key Skills Demonstrated
-
-* Spring Boot
-* Spring Security
-* JWT Authentication
-* REST APIs
-* PostgreSQL
-* JPA/Hibernate
-* Exception Handling
-* DTO Pattern
-* Layered Architecture
-* Role-Based Authorization
-* Clean Code Principles
+Spring Boot | Microservices | PostgreSQL | Kafka
