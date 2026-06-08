@@ -410,8 +410,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/bookmyshow
-    username: postgres
-    password: postgres
+    username: DB_USERNAME
+    password: DB_PASSWORD
 
   jpa:
     hibernate:
@@ -421,7 +421,6 @@ spring:
 
 jwt:
   secret: 1234567890123456789012345678901234567890
-  expiration: 86400000
 ```
 
 ---
